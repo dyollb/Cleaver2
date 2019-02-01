@@ -1,4 +1,7 @@
+FIND_PACKAGE(VTK REQUIRED)
+INCLUDE(${VTK_USE_FILE})
+
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/include)
 
 ADD_EXECUTABLE(implicit_spheres implicit_spheres.cpp)
-TARGET_LINK_LIBRARIES(implicit_spheres cleaver)
+TARGET_LINK_LIBRARIES(implicit_spheres cleaver ${VTK_LIBRARIES})

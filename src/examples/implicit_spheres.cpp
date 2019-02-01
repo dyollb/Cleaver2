@@ -9,6 +9,40 @@
 #include <Cleaver/InverseField.h>
 #include <Cleaver/Volume.h>
 
+#include <vtkImageData.h>
+#include <vtkPointData.h>
+#include <vtkFloatArray.h>
+#include <vtkXMLImageDataReader.h>
+#include <vtkSmartPointer.h>
+
+cleaver::AbstractScalarField* loadVTIFile(const std::string &filename)
+{
+	using namespace cleaver;
+
+	auto reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
+	reader->SetFileName(filename.c_str());
+	reader->Update();
+
+	double spacing[3];
+	int dim[3];
+	auto image = reader->GetOutput();
+	image->GetDimensions(dim);
+	image->GetSpacing(spacing);
+
+	float* data = new float[dim[0]*dim[1]*dim[2]];
+	AbstractScalarField *field = new FloatField(data, dim[0], dim[1], dim[2]);
+
+	auto N = image->GetNumberOfPoints();
+	auto in_data = image->GetPointData()->GetArray(0);
+	for (vtkIdType i=0; i<N; ++i)
+	{
+		data[i] = static_cast<float>(in_data->GetTuple1(i));
+	}
+
+	((FloatField*)field)->setScale(vec3(spacing[0], spacing[1], spacing[2]));
+	return field;
+}
+
 class MockupField : public cleaver::AbstractScalarField
 {
 public:
@@ -60,11 +94,12 @@ private:
 const std::string scirun = "scirun";
 const std::string tetgen = "tetgen";
 const std::string matlab = "matlab";
-const std::string vtk = "vtk";
+const std::string vtk_format = "vtk";
 
 std::vector<std::string> inputs;
-std::string output = "output";
-std::string format = vtk;
+std::string input = "Z:/Models/v3.1_Voxels/roberta_voxels.vti";
+std::string output = "Z:/Models/v3.1_Voxels/roberta_mesh.vtk";
+std::string format = vtk_format;
 bool verbose = true;
 bool absolute_resolution = false;
 bool scaled_resolution = false;
@@ -78,13 +113,14 @@ int main(int argc, char *argv[])
     //  Define volume
     //-------------------------------
     std::vector<cleaver::AbstractScalarField*> fields;// = loadNRRDFiles(inputs, verbose);
-	fields.push_back( new MockupField(cleaver::vec3(0.5f,0.5f,0.5f)) );
-	fields.push_back( new MockupField(cleaver::vec3(0.4f,0.4f,0.4f)) );
-	fields.push_back( new MockupField(cleaver::vec3(0.3f,0.3f,0.6f)) );
-	fields.push_back( new ConstantField(0.f) );
+	fields.push_back(loadVTIFile(input));
+	//fields.push_back( new MockupField(cleaver::vec3(0.5f,0.5f,0.5f)) );
+	//fields.push_back( new MockupField(cleaver::vec3(0.4f,0.4f,0.4f)) );
+	//fields.push_back( new MockupField(cleaver::vec3(0.3f,0.3f,0.6f)) );
+	//fields.push_back( new ConstantField(0.f) );
 
 	scaled_resolution = true;
-	sx=sy=sz = 45;
+	sx=sy=sz = 0.5;
 
     if(fields.empty())
 	{
@@ -144,7 +180,7 @@ int main(int argc, char *argv[])
         mesh->writePtsEle(output, verbose);
     else if(format == matlab)
         mesh->writeMatlab(output, verbose);
-    else if(format == vtk)
+    else if(format == vtk_format)
         mesh->writeVtkUnstructuredGrid(output, verbose);
 
     //----------------------

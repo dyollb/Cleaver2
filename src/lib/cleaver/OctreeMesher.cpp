@@ -1,11 +1,12 @@
 #include "OctreeMesher.h"
 
-#include <map>
-#include <cmath>
-
 #include "vec3.h"
 #include "Octree.h"
 #include "SizingFieldOracle.h"
+
+#include <map>
+#include <cmath>
+#include <algorithm>
 
 namespace cleaver
 {

@@ -3,9 +3,11 @@
 #include "Vertex.h"
 #include "ScalarField.h"
 #include "SizingFieldOracle.h"
+#include "CleaverMesher.h"
+
 #include <cmath>
 #include <cstdlib>
-#include "CleaverMesher.h"
+#include <algorithm>
 
 namespace cleaver {
 

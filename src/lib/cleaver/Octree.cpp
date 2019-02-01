@@ -1,7 +1,9 @@
 #include "Octree.h"
 #include "BoundingBox.h"
 #include "Util.h"
+
 #include <cstring>
+#include <algorithm>
 
 namespace cleaver
 {
